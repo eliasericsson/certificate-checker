@@ -17,9 +17,6 @@
 # 89 days until expiration: www.google.com
 # 89 days until expiration: www.facebook.com
 
-# Check if domain is provided
-# If not, exit with error
-
 # Black        0;30     Dark Gray     1;30
 # Red          0;31     Light Red     1;31
 # Green        0;32     Light Green   1;32
@@ -34,6 +31,8 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
 
+# Check if domain is provided
+# If not, exit with error
 if [ -z "$1" ]; then
   echo "${YELLOW}No domain provided${NC}"
   echo "Usage: ./certcheck.sh <domain>"
@@ -42,6 +41,7 @@ fi
 
 for i in "$@"
 do
+    (
     # Get expiration date from domain
     # If domain is not valid, exit with error
     expirationdate=$(echo | openssl s_client -servername "$i" -connect $i:443 2>/dev/null | openssl x509 -noout -dates | grep notAfter | cut -d "=" -f 2)
@@ -66,4 +66,9 @@ do
     else
         echo "${GREEN}$datedifferenceindays days${NC} until expiration: $i" 
     fi
+    ) &
 done
+
+wait
+
+echo "Done"
